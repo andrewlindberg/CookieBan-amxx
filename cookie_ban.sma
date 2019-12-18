@@ -48,7 +48,7 @@ public plugin_init()
     register_message( get_user_msgid("MOTD"), "MessageMotd" )
     
     p_server = register_cvar( "cookie_server", "1" );
-    register_cvar( "amxbans_complain_url", "dust-pro.com" );
+    //register_cvar( "amxbans_complain_url", "dust-pro.com" );
     pcvar_complainurl = get_cvar_pointer( "amxbans_complain_url" );
     hTuple = SQL_MakeDbTuple( host, user, pass, db );
     register_dictionary( "amxbans.txt" );
