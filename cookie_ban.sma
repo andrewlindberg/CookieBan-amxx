@@ -39,7 +39,7 @@ new p_server;
 
 public plugin_init()
 {
-    register_plugin( "Cookie Bans for AMXBans", "2.1.1", "DusT" );
+    register_plugin( "Cookie Bans for AMXBans", "2.1.2", "DusT" );
     // admin commands
     register_concmd( "amx_ban", "CmdBan" );
     register_concmd( "cookie_remove", "CookieRemove", ADMIN_FLAG, "< nick > - removes nick from cookie bans." );
@@ -75,7 +75,7 @@ public SQL_Init()
     formatex( szQuery, charsmax( szQuery ), "CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, `first_nick` VARCHAR(31) NOT NULL, `banid` INT NOT NULL, `ban_length` INT NOT NULL, `cookie` VARCHAR( %d ) NOT NULL, PRIMARY KEY ( id ) );", bannedCookies, MAX_COOKIE_SIZE );
     SQL_ThreadQuery( hTuple, "IgnoreHandle", szQuery );
 
-    formatex( szQuery, charsmax( szQuery ), "CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, `uid` INT NOT NULL UNIQUE, `cookie` VARCHAR( %d ) NOT NULL UNIQUE, `server` INT NOT NULL, PRIMARY KEY ( id ) );", checkedCookies, MAX_COOKIE_SIZE );
+    formatex( szQuery, charsmax( szQuery ), "CREATE TABLE IF NOT EXISTS `%s` ( `id` INT NOT NULL AUTO_INCREMENT, `uid` INT NOT NULL, `cookie` VARCHAR( %d ) NOT NULL UNIQUE, `server` INT NOT NULL, PRIMARY KEY ( id ) );", checkedCookies, MAX_COOKIE_SIZE );
     SQL_ThreadQuery( hTuple, "IgnoreHandle", szQuery );
 
     formatex( szQuery, charsmax( szQuery ), "DELETE FROM `%s` WHERE `ban_length` < UNIX_TIMESTAMP();", bannedCookies );
@@ -135,10 +135,7 @@ public CmdBan( id )
 public SQL_GetCookie( failState, Handle:query, error[], errNum, data[], dataSize )
 {
     if( !SQL_NumResults( query ) )
-    {
-        server_print( "Couldn't find cookie" );
         return;
-    }
         
     SQL_ReadResult( query, 0, data[ COOKIE ], charsmax( data[ COOKIE ] ) );
 
@@ -182,7 +179,9 @@ public SQL_CheckCookieHandler( failState, Handle:query, error[], errNum, data[],
     if( !is_user_connected( id ) )
         return;
     if( !SQL_NumResults( query ) )
+    {
         return;
+    }
     new bid = SQL_ReadResult( query, SQL_FieldNameToNum( query, "banid" ) );
     if( bid )
         SQL_ThreadQuery( hTuple, "SQL_FindBan", fmt( "SELECT bid,ban_created,ban_length,ban_reason,admin_nick,player_nick,player_id,player_ip,server_name FROM `%s` WHERE `bid` = %d", bansTable, bid ), data, dataSize );
