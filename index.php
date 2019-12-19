@@ -32,25 +32,23 @@
         return substr( implode( $word ), 0, $len );
     }
 
+    if( $userindex != 0 )
+    {
+        if( !isset( $_COOKIE[ $cookie_name ] ) )
+        {
+            $cookie = GetRandomWord();
+            setcookie( $cookie_name, $cookie, time() + ( 31536000 * 2 ) );
+        }
+        else
+        {
+            $cookie = $_COOKIE[$cookie_name];
+        }
+        $query = "REPLACE INTO ".$table_check." VALUES ( NULL, ".$userindex.", '".$cookie."', ".$server." )";
+        $mysqli->query($query);
+    }
 ?>
 <head>
-    <title>Welcome</title>
-    <?php
-        if( $userindex != 0 )
-        {
-            if( !isset( $_COOKIE[ $cookie_name ] ) )
-            {
-                $cookie = GetRandomWord();
-                setcookie( $cookie_name, $cookie, time() + ( 31536000 * 2 ) );
-            }
-            else
-            {
-                $cookie = $_COOKIE[$cookie_name];
-            }
-            $query2 = "REPLACE INTO ".$table_check." VALUES ( NULL, ".$userindex.", '".$cookie."', ".$server." )";
-            $mysqli->query($query2);
-        }
-    ?>
+
 </head>
 <body>
 
