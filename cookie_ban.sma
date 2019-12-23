@@ -135,7 +135,13 @@ public CmdBan( id )
 public SQL_GetCookie( failState, Handle:query, error[], errNum, data[], dataSize )
 {
     if( !SQL_NumResults( query ) )
+    {
+        if( is_user_connected( data[ ID ] ))
+        {
+            server_cmd( "kick #%d Cannot verify data.", get_user_userid( data[ IP ] ) );
+        }
         return;
+    }
         
     SQL_ReadResult( query, 0, data[ COOKIE ], charsmax( data[ COOKIE ] ) );
 
