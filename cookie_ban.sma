@@ -2,7 +2,7 @@
 #include < amxmisc >
 #include < time >
 #include < sqlx >
-
+#include < amxbans_main >
 
 #define MOTD_CHECK          "http://localhost:8080/cs/CookieCheck/index.php"
 #define MAX_COOKIE_SIZE     35
@@ -39,13 +39,13 @@ new p_server;
 
 public plugin_init()
 {
-    register_plugin( "Cookie Bans for AMXBans", "2.1.2", "DusT" );
+    register_plugin( "Cookie Bans for AMXBans", "2.2.0", "DusT" );
     // admin commands
-    register_concmd( "amx_ban", "CmdBan" );
+    //register_concmd( "amx_ban", "CmdBan" );
     register_concmd( "cookie_remove", "CookieRemove", ADMIN_FLAG, "< nick > - removes nick from cookie bans." );
     register_concmd( "cookie_ban", "CmdCookieBan", ADMIN_FLAG, "< nick | steamid | #id > [ time ] - Bans with cookies." );
 
-    register_message( get_user_msgid("MOTD"), "MessageMotd" )
+    register_message( get_user_msgid("MOTD"), "MessageMotd" );
     
     p_server = register_cvar( "cookie_server", "1" );
     //register_cvar( "amxbans_complain_url", "dust-pro.com" );
@@ -107,6 +107,7 @@ public plugin_end()
     SQL_ThreadQuery( hTuple, "IgnoreHandle", fmt( "DELETE FROM `%s`", checkedCookies ) );
 }
 
+/*
 public CmdBan( id )
 {
     if( !( get_user_flags( id ) & ADMIN_FLAG ) )
@@ -125,18 +126,31 @@ public CmdBan( id )
     get_user_name( pid, data[ NAME ], charsmax( data[ NAME ] ) );
     data[ ID ] = pid;
     data[ TIME ] = get_systime() + ( ( time == 0 )? 31536000 * 2 : time * 60 ); 
-    get_user_ip( id, data[ IP ], charsmax( data[ IP ] ), 1 );
+    get_user_ip( pid, data[ IP ], charsmax( data[ IP ] ), 1 );
     // get cookie from checkedCookies table
     SQL_ThreadQuery( hTuple, "SQL_GetCookie", fmt( "SELECT `cookie` FROM `%s` WHERE `uid`=%d AND `server`=%d;", checkedCookies, get_user_userid( pid ), get_pcvar_num( p_server ) ), data, sizeof data );
     
     return PLUGIN_CONTINUE;
 }
+*/
+
+//forward from AMXBans
+public amxbans_ban_motdopen( id )
+{
+    new data[ PlayerData ];
+    get_user_name( id, data[ NAME ], charsmax( data[ NAME ] ) );
+    data[ ID ] = id;
+    get_user_ip( id, data[ IP ], charsmax( data[ IP ] ), 1 );
+    SQL_ThreadQuery( hTuple, "SQL_GetCookie", fmt( "SELECT `cookie` FROM `%s` WHERE `uid`=%d AND `server`=%d;", checkedCookies, get_user_userid( id ), get_pcvar_num( p_server ) ), data, sizeof data );
+}
+
+
 // retrieve cookie and save in data[ COOKIE ]
 public SQL_GetCookie( failState, Handle:query, error[], errNum, data[], dataSize )
 {
     if( !SQL_NumResults( query ) )
     {
-        if( is_user_connected( data[ ID ] ))
+        if( is_user_connected( data[ ID ] ) && !data[ IP ][ 0 ] )
         {
             server_cmd( "kick #%d Cannot verify data.", get_user_userid( data[ IP ] ) );
         }
@@ -155,12 +169,15 @@ public SQL_GetBid( data[], taskId )
     taskId -= TASK_GETBID;
 
     //search by IP rather than nick is better. 
-    SQL_ThreadQuery( hTuple, "SQL_GetBidHandler", fmt( "SELECT `bid` FROM `%s` WHERE `player_ip`='%s';", bansTable, data[ IP ] ), data, taskId );
+    SQL_ThreadQuery( hTuple, "SQL_GetBidHandler", fmt( "SELECT `bid`, `ban_length` FROM `%s` WHERE `player_ip`='%s';", bansTable, data[ IP ] ), data, taskId );
 }
 
 public SQL_GetBidHandler( failState, Handle:query, error[], errNum, data[], dataSize )
 {
     new bid = ( ( SQL_NumResults( query ) )? SQL_ReadResult( query, 0 ):0 );
+    if( bid )
+        data[ TIME ] = get_systime() + ( ( SQL_ReadResult( query, 1 ) == 0 )? 31536000 * 2:SQL_ReadResult( query, 1 )*60 );
+
     BanCookie( data[ NAME ], data[ COOKIE ], bid, data[ TIME ] );
 }
 
