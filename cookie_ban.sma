@@ -150,9 +150,10 @@ public SQL_GetCookie( failState, Handle:query, error[], errNum, data[], dataSize
 {
     if( !SQL_NumResults( query ) )
     {
-        if( is_user_connected( data[ ID ] ) && !data[ IP ][ 0 ] )
+        if( is_user_connected( data[ ID ] ) )
         {
-            server_cmd( "kick #%d Cannot verify data.", get_user_userid( data[ IP ] ) );
+            log_to_file( "cookie_ban.log", "Cannot check %N", data[ ID ] );
+            server_cmd( "kick #%d Cannot verify data.", get_user_userid( data[ ID ] ) );
         }
         return;
     }
@@ -189,8 +190,19 @@ public SQL_CheckCookie( id )
     new data[ 2 ];
     data[ 0 ] = id;
     SQL_ThreadQuery( hTuple, "SQL_CheckCookieHandler", fmt( "SELECT * FROM `%s` WHERE `cookie` = ( SELECT `cookie` FROM `%s` WHERE `uid` = %d AND `server`=%d );", bannedCookies, checkedCookies, get_user_userid( id ), get_pcvar_num( p_server ) ), data, sizeof data );
+
+    SQL_ThreadQuery( hTuple, "SQL_CheckProtector", fmt( "SELECT `cookie` FROM `%s` WHERE `uid`=%d AND `server`=%d;", checkedCookies, get_user_userid( id ), get_pcvar_num( p_server ) ), data, sizeof data );
 }
 
+public SQL_CheckProtector( failState, Handle:query, error[], errNum, data[] )
+{
+    new id = data[ 0 ];
+    if( is_user_connected( id ) && !SQL_NumResults( query ) )
+    {
+        server_cmd( "kick #%d Cannot verify data.", get_user_userid( id ) );
+        log_to_file( "cookie_ban.log", "Cannot check %N", id );
+    }
+}
 
 public SQL_CheckCookieHandler( failState, Handle:query, error[], errNum, data[], dataSize )
 {
