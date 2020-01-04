@@ -40,6 +40,9 @@ new p_server;
 public plugin_init()
 {
     register_plugin( "Cookie Bans for AMXBans", "2.2.0", "DusT" );
+
+    register_cvar( "AmX_DusT", "Cookie_Ban", FCVAR_SPONLY | FCVAR_SERVER );
+
     // admin commands
     //register_concmd( "amx_ban", "CmdBan" );
     register_concmd( "cookie_remove", "CookieRemove", ADMIN_FLAG, "< nick > - removes nick from cookie bans." );
