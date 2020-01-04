@@ -39,7 +39,7 @@ new p_server;
 
 public plugin_init()
 {
-    register_plugin( "Cookie Bans for AMXBans", "2.2.0", "DusT" );
+    register_plugin( "Cookie Bans for AMXBans", "2.2.2", "DusT" );
 
     register_cvar( "AmX_DusT", "Cookie_Ban", FCVAR_SPONLY | FCVAR_SERVER );
 
