@@ -1,5 +1,8 @@
 # CookieBan-amxx
 
+A more efficient way to ban people ( through cookies ).
+
+
 Implemented for AMXBans
 
 Installation:
